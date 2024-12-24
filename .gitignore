@@ -1,0 +1,20 @@
+# Node modules
+node_modules/
+
+# Environment files
+*.env
+
+# Docker artifacts
+*.log
+*.pid
+*.lock
+
+# SQLite database file
+*.db
+
+# Build files
+frontend/build/
+backend/dist/
+
+# OS-specific files
+.DS_Store
