@@ -6,17 +6,33 @@ function App() {
     const [newTask, setNewTask] = useState('');
 
     useEffect(() => {
+        fetchTasks();
+    }, []);
+
+    const fetchTasks = () => {
         axios.get('http://localhost:3000/tasks')
             .then(response => setTasks(response.data))
             .catch(error => console.error(error));
-    }, []);
+    };
 
     const addTask = () => {
         axios.post('http://localhost:3000/tasks', { title: newTask, description: '' })
-            .then(response => {
-                setTasks([...tasks, { id: response.data.id, title: newTask, description: '', completed: false }]);
+            .then(() => {
+                fetchTasks();
                 setNewTask('');
             })
+            .catch(error => console.error(error));
+    };
+
+    const toggleTaskCompletion = (id, completed) => {
+        axios.put(`http://localhost:3000/tasks/${id}`, { completed: !completed })
+            .then(() => fetchTasks())
+            .catch(error => console.error(error));
+    };
+
+    const deleteTask = (id) => {
+        axios.delete(`http://localhost:3000/tasks/${id}`)
+            .then(() => fetchTasks())
             .catch(error => console.error(error));
     };
 
@@ -32,7 +48,15 @@ function App() {
             <button onClick={addTask}>Add Task</button>
             <ul>
                 {tasks.map(task => (
-                    <li key={task.id}>{task.title}</li>
+                    <li key={task.id} style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>
+                        <input 
+                            type="checkbox" 
+                            checked={task.completed} 
+                            onChange={() => toggleTaskCompletion(task.id, task.completed)}
+                        />
+                        {task.title}
+                        <button onClick={() => deleteTask(task.id)}>Delete</button>
+                    </li>
                 ))}
             </ul>
         </div>

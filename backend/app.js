@@ -45,5 +45,39 @@ app.post('/tasks', (req, res) => {
     });
 });
 
+app.put('/tasks/:id', (req, res) => {
+    const { id } = req.params;
+    const { completed } = req.body;
+
+    db.run(
+        `UPDATE tasks SET completed = ? WHERE id = ?`,
+        [completed, id],
+        function (err) {
+            if (err) {
+                res.status(500).send(err.message);
+            } else if (this.changes === 0) {
+                res.status(404).send('Task not found');
+            } else {
+                res.json({ success: true });
+            }
+        }
+    );
+});
+
+app.delete('/tasks/:id', (req, res) => {
+    const { id } = req.params;
+
+    db.run(`DELETE FROM tasks WHERE id = ?`, [id], function (err) {
+        if (err) {
+            res.status(500).send(err.message);
+        } else if (this.changes === 0) {
+            res.status(404).send('Task not found');
+        } else {
+            res.json({ success: true });
+        }
+    });
+});
+
+
 // Start the server
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
