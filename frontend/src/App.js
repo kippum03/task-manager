@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Container, TextField, Button, List, ListItem, ListItemText, Checkbox, IconButton, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function App() {
     const [tasks, setTasks] = useState([]);
@@ -37,29 +39,39 @@ function App() {
     };
 
     return (
-        <div>
-            <h1>Task Manager</h1>
-            <input 
-                type="text" 
-                value={newTask} 
-                onChange={(e) => setNewTask(e.target.value)} 
-                placeholder="New Task" 
+        <Container maxWidth="sm" sx={{ mt: 4 }}>
+            <Typography variant="h4" align="center" gutterBottom>
+                Task Manager
+            </Typography>
+            <TextField
+                fullWidth
+                label="New Task"
+                variant="outlined"
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                sx={{ mb: 2 }}
             />
-            <button onClick={addTask}>Add Task</button>
-            <ul>
+            <Button variant="contained" color="primary" fullWidth onClick={addTask}>
+                Add Task
+            </Button>
+            <List sx={{ mt: 2 }}>
                 {tasks.map(task => (
-                    <li key={task.id} style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>
-                        <input 
-                            type="checkbox" 
-                            checked={task.completed} 
+                    <ListItem key={task.id} divider>
+                        <Checkbox
+                            checked={task.completed}
                             onChange={() => toggleTaskCompletion(task.id, task.completed)}
                         />
-                        {task.title}
-                        <button onClick={() => deleteTask(task.id)}>Delete</button>
-                    </li>
+                        <ListItemText 
+                            primary={task.title} 
+                            sx={{ textDecoration: task.completed ? 'line-through' : 'none' }} 
+                        />
+                        <IconButton edge="end" aria-label="delete" onClick={() => deleteTask(task.id)}>
+                            <DeleteIcon />
+                        </IconButton>
+                    </ListItem>
                 ))}
-            </ul>
-        </div>
+            </List>
+        </Container>
     );
 }
 
