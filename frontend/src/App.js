@@ -1,11 +1,12 @@
 // React & library imports
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // HTTP client for API requests
-import { 
-    Container, TextField, Button, List, 
-    ListItem, ListItemText, Checkbox, IconButton, Typography 
+import {
+    Container, TextField, Button, Paper,
+    Box, Typography, Checkbox, IconButton,
+    Menu, MenuItem, Divider
 } from '@mui/material'; // MUI components for layout & styling
-import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertIcon from '@mui/icons-material/MoreVert'; // 3-dot icon for options menu
 
 function App() {
     // State to hold list of tasks from the backend
@@ -13,6 +14,10 @@ function App() {
 
     // State to hold text input when adding a new task
     const [newTask, setNewTask] = useState('');
+
+    // State to manage dropdown menu anchor and open task ID
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [menuOpenId, setMenuOpenId] = useState(null);
 
     // Fetch all existing tasks from backend
     useEffect(() => {
@@ -28,6 +33,7 @@ function App() {
 
     // Add a new task via POST to backend, then refresh list
     const addTask = () => {
+        if (!newTask.trim()) return;
         axios.post('http://localhost:3000/tasks', { title: newTask, description: '' })
             .then(() => {
                 fetchTasks(); // refresh the task list
@@ -50,6 +56,30 @@ function App() {
             .catch(error => console.error(error));
     };
 
+    // Open options menu for a task
+    const handleMenuOpen = (event, id) => {
+        setAnchorEl(event.currentTarget);
+        setMenuOpenId(id);
+    };
+
+    // Close the options menu
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        setMenuOpenId(null);
+    };
+
+    // Delete and close menu
+    const handleDelete = (id) => {
+        deleteTask(id);
+        handleMenuClose();
+    };
+
+    // Placeholder for edit behavior
+    const handleEdit = (id) => {
+        console.log('Edit clicked for task:', id);
+        handleMenuClose();
+    };
+
     // Render the task manager interface
     return (
         <Container maxWidth="sm" sx={{ mt: 4 }}>
@@ -68,31 +98,56 @@ function App() {
             />
 
             {/* Add Task button */}
-            <Button variant="contained" color="primary" fullWidth onClick={addTask}>
+            <Button variant="contained" color="primary" fullWidth onClick={addTask} sx={{ mb: 3 }}>
                 Add Task
             </Button>
 
-            {/* List of tasks */}
-            <List sx={{ mt: 2 }}>
-                {tasks.map(task => (
-                    <ListItem key={task.id} divider>
-                        {/* Checkbox for marking as complete */}
+            {/* Task cards with checkbox and options */}
+            {tasks.map(task => (
+                <Paper
+                    key={task.id}
+                    elevation={2}
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: 1.5,
+                        mb: 1,
+                    }}
+                >
+                    {/* Checkbox + Title */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
                         <Checkbox
                             checked={task.completed}
                             onChange={() => toggleTaskCompletion(task.id, task.completed)}
                         />
-                        {/* Display task title; line-through if completed */}
-                        <ListItemText 
-                            primary={task.title} 
-                            sx={{ textDecoration: task.completed ? 'line-through' : 'none' }} 
-                        />
-                        {/* Delete button */}
-                        <IconButton edge="end" aria-label="delete" onClick={() => deleteTask(task.id)}>
-                            <DeleteIcon />
+                        <Typography
+                            sx={{
+                                textDecoration: task.completed ? 'line-through' : 'none',
+                                fontWeight: 500,
+                            }}
+                        >
+                            {task.title}
+                        </Typography>
+                    </Box>
+
+                    {/* 3-dot options menu (edit/delete) */}
+                    <Box>
+                        <IconButton onClick={(e) => handleMenuOpen(e, task.id)}>
+                            <MoreVertIcon />
                         </IconButton>
-                    </ListItem>
-                ))}
-            </List>
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={menuOpenId === task.id}
+                            onClose={handleMenuClose}
+                        >
+                            <MenuItem onClick={() => handleEdit(task.id)}>Edit</MenuItem>
+                            <Divider />
+                            <MenuItem onClick={() => handleDelete(task.id)}>Delete</MenuItem>
+                        </Menu>
+                    </Box>
+                </Paper>
+            ))}
         </Container>
     );
 }
